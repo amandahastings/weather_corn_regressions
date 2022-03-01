@@ -143,19 +143,26 @@ cornyields <- tibble(cornyields)
 ### Question 1a: Extract Winneshiek County corn yields, fit a linear time trend, make a plot. Is there a significant time trend?
 
 ```{r}
+
 library(ggthemes)
+
+#Extract Winneshiek County corn yields 
 
 winne_yields <- cornyields %>%
   filter(county_ansi == 191)
 
-winne_yieldtimeLM <- lm(yield ~ year, data = winne_yields)
-summary(winne_yieldtimeLM)
+# Fit a model for yield as the response and year as predictor 
+
+winne_timeLM <- lm(yield ~ year, data = winne_yields)
+summary(winne_timeLM)
+
+#Plot corn yield(y) by year(x)
 
 ggplot(aes(x = year, y = yield), data = winne_yields) +
   geom_point(shape = 1) +
   theme_few() +
   labs(x = "Year", y = "Corn Yields", title = "Winneshiek County Corn Yield") +
-  geom_smooth(method = lm, se=FALSE)
+  geom_smooth(method = lm, se=FALSE, size = 0.5, color = "black")
 
 
 ```
@@ -166,13 +173,18 @@ With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hyp
 ### Question 1b: Fit a quadratic time trend (i.e., year + year^2) and make a plot. Is there evidence for slowing yield growth? 
 
 ```{r}
+
+# Create column for year^2 
+
 winne_yields$yearsq <- winne_yields$year^2
 
-#Fit quadratic time trend
+#Fit quadratic time trend with yield(y) and year and year^2 as covariates(x)
+
 quad_timeLM <- lm(yield~year + yearsq, data = winne_yields)
 summary(quad_timeLM)
 
-#Plot using geom_smooth
+#Plot yield(y) by year^2 (x), use geom_smooth for quadratic line 
+
 ggplot(aes(x = yearsq, y = yield), data = winne_yields) +
   geom_point(shape = 1) +
   theme_few() +
@@ -188,7 +200,8 @@ ggplot(aes(x = yearsq, y = yield), data = winne_yields) +
     color = "black"
   )
 
-#Plot using fitted values
+#Plot yield(y) by year^2 (x), use fitted values from the model for quadratic line 
+
 winne_yields$fitted <- quad_timeLM$fitted.values
 
 ggplot(winne_yields) +
@@ -203,18 +216,44 @@ ggplot(winne_yields) +
 ### Question 2 -- Time Series: Let's analyze the relationship between temperature and yields for the Winneshiek County time series. Use data on yield and summer avg Tmax. Is adding year or Tmax^2 to your model helpful? Make a plot and interpret the results.
 
 ```{r}
+
 #Add average summer Tmax to winne_yield data 
+
 winne_summer_yield <- left_join(winne_yields,winnesummer, by = "year")%>% 
   filter(!is.na(meantmax))
 
-#Plot average summer Tmax (x) and corn yield (y)
+#Add summer Tmax^2 to winne_summer_yield 
+
+winne_summer_yield$meantmaxsq <- winne_summer_yield$meantmax^2
+
+#Fit a model for yield and average summer maximum temperature alone 
+
+winne_tempLM <- lm(yield~meantmax, data=winne_summer_yield)
+summary(winne_tempLM)
+
+#Plot corn yield (y) and average summer Tmax (x)
+
 ggplot(aes(x = meantmax, y = yield), data = winne_summer_yield) +
   geom_point(shape = 1) +
   theme_few() +
   labs(x = "Summer Maximum Temperature", y = "Corn Yields", title = "Winneshiek County Corn Yield in Summer") +
-  geom_smooth(method = lm, se=FALSE)
+  geom_smooth(method = lm, se=FALSE, size = 0.5, color = "black")
 
-#Is adding covariates: year and Tmax^2 helpful? 
+#Fit a model for yield with covariates: average summer max temp and year \
+
+temp_yearLM <- lm(yield~meantmax + year, data=winne_summer_yield)
+summary(temp_yearLM)
+
+winne_summer_yield$fitted_2a <- temp_yearLM$fitted.values
+
+#Plot 
+
+# Fit a model for yield with covariates: average summer max temp and max temp^2 
+
+quad_tempLM <- lm(yield~meantmax + meantmaxsq, data=winne_summer_yield)
+summary(quad_tempLM)
+
+winne_summer_yield$fitted_2b <- quad_tempLM$fitted.values
 
 ```
 
