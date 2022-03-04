@@ -184,7 +184,7 @@ With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hyp
 
 #### **Quadratic time trend analysis within Winneshiek County, Iowa**
 
-#### *MLR - Yield by Covariates: Year,Year^2*
+#### *Quadratic Regression - Yield by Covariates: Year,Year^2*
 
 ```{r}
 
@@ -274,7 +274,7 @@ winne_summer_yield$fitted_2 <- winne_tempLM$fitted.values
 ```
 
 
-#### *MLR - Yield by Covariates: Average Summer Maximum Temperature, Year* 
+#### *Multiple Regression - Yield by Covariates: Average Summer Maximum Temperature, Year* 
 
 ```{r}
 #Add summer Tmax^2 to winne_summer_yield 
@@ -293,7 +293,7 @@ winne_summer_yield$fitted_2a <- temp_yearLM$fitted.values
 ```
 
 
-#### *MLR - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
+#### *Quadratic Regression - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
 
 ```{r}
 
@@ -316,8 +316,8 @@ winne_summer_yield$fitted_2b <- quad_tempLM$fitted.values
 ggplot(winne_summer_yield) +
   geom_point(mapping = aes(x = meantmax, y = yield), shape = 1) +
   geom_line(mapping = aes(x = meantmax, y = fitted_2, col="SLR")) +
-  geom_line(mapping = aes(x = meantmax, y = fitted_2a, col="MLR with year")) +
-  geom_line(mapping = aes(x = meantmax, y = fitted_2b, col="MLR with temp^2")) +
+  geom_line(mapping = aes(x = meantmax, y = fitted_2a, col="MR with year")) +
+  geom_line(mapping = aes(x = meantmax, y = fitted_2b, col="QR")) +
   labs(colour = NULL) +
   theme_few() +
   labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield")
@@ -400,14 +400,14 @@ co_yearly_join$meantmaxsq <- co_yearly_join$meantmax^2
 panelLM <- lm(yield~ meantmax+ meantmaxsq+countyfp, data = co_yearly_join)
 tidy(summary(panelLM))
 
-co_yearly_join$fit_panel <- panelLM$fitted.values
+# co_yearly_join$fit_panel <- panelLMfitted.values
 
 # Plot actual versus fitted yields 
 
-ggplot(co_yearly_join) +
-  geom_point(mapping = aes(x = meantmax, y = yield), shape = 1) +
-  theme_few() +
-  labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Corn Yield")
+# ggplot(co_yearly_join) +
+#   geom_point(mapping = aes(x = meantmax, y = yield), shape = 1) +
+#   theme_few() +
+#   labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Corn Yield")
 
 
 ```
@@ -419,18 +419,18 @@ ggplot(co_yearly_join) +
 #Download NASS data on soybean yields 
 
 #Parameters for soybean data
-params <- list(commodity_desc = "SOYBEAN", util_practice_desc = "GRAIN", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, state_alpha = "IA")
-
-# download
-cornyieldsall <- nassqs_yields(params)
-
-cornyieldsall$county_ansi <- as.numeric(cornyieldsall$county_ansi)
-cornyieldsall$yield <- as.numeric(cornyieldsall$Value)
-
-# clean and filter this dataset
-cornyields <- select(cornyieldsall, county_ansi, county_name, yield, year) %>%
-  filter(!is.na(county_ansi) & !is.na(yield))
-cornyields <- tibble(cornyields)
+# params <- list(commodity_desc = "SOYBEAN", util_practice_desc = "GRAIN", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, state_alpha = "IA")
+# 
+# # download
+# cornyieldsall <- nassqs_yields(params)
+# 
+# cornyieldsall$county_ansi <- as.numeric(cornyieldsall$county_ansi)
+# cornyieldsall$yield <- as.numeric(cornyieldsall$Value)
+# 
+# # clean and filter this dataset
+# cornyields <- select(cornyieldsall, county_ansi, county_name, yield, year) %>%
+#   filter(!is.na(county_ansi) & !is.na(yield))
+# cornyields <- tibble(cornyields)
 
 ```
 
