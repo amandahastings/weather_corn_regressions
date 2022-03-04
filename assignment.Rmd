@@ -142,35 +142,49 @@ cornyields <- tibble(cornyields)
 
 ### Question 1a: Extract Winneshiek County corn yields, fit a linear time trend, make a plot. Is there a significant time trend?
 
+#### **Linear time trend analysis within Winneshiek County, Iowa**
+
+#### *SLR - Yield by Covariate: Year*
+
 ```{r}
 
 library(ggthemes)
+library(broom)
+
 
 #Extract Winneshiek County corn yields 
 
 winne_yields <- cornyields %>%
   filter(county_ansi == 191)
 
-# Fit a model for yield as the response and year as predictor 
+# Fit a model for yield as the response (y) and year as predictor (x) 
 
 winne_timeLM <- lm(yield ~ year, data = winne_yields)
-summary(winne_timeLM)
+tidy(summary(winne_timeLM))
+
+#Add fitted values from linear model to data frame 
+
+winne_yields$fitted_l <- winne_timeLM$fitted.values
 
 #Plot corn yield(y) by year(x)
+#Add line for linear time trend 
 
 ggplot(aes(x = year, y = yield), data = winne_yields) +
   geom_point(shape = 1) +
+  geom_line(mapping = aes(x = year, y = fitted_l)) +
   theme_few() +
-  labs(x = "Year", y = "Corn Yields", title = "Winneshiek County Corn Yield") +
-  geom_smooth(method = lm, se=FALSE, size = 0.5, color = "black")
-
+  labs(x = "Year", y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield (Linear Time Trend)") 
 
 ```
 
-With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hypothesis $\H_0 = \beta_1$. We have enough evidence to suggest there is a significant time trend. There estimated 2.457 unit increase in corn yield with each increasing year. 
+With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hypothesis $\H_0 = \beta_1$. We have enough evidence to suggest there is a significant time trend. There estimated 2.457 bu/acre increase in corn yield with each increasing year. 
 
 
 ### Question 1b: Fit a quadratic time trend (i.e., year + year^2) and make a plot. Is there evidence for slowing yield growth? 
+
+#### **Quadratic time trend analysis within Winneshiek County, Iowa**
+
+#### *MLR - Yield by Covariates: Year,Year^2*
 
 ```{r}
 
@@ -181,39 +195,65 @@ winne_yields$yearsq <- winne_yields$year^2
 #Fit quadratic time trend with yield(y) and year and year^2 as covariates(x)
 
 quad_timeLM <- lm(yield~year + yearsq, data = winne_yields)
-summary(quad_timeLM)
+tidy(summary(quad_timeLM))
 
-#Plot yield(y) by year^2 (x), use geom_smooth for quadratic line 
+#Add fitted values from the quad model to data frame 
 
-ggplot(aes(x = yearsq, y = yield), data = winne_yields) +
-  geom_point(shape = 1) +
-  theme_few() +
-  labs(x = expression("Year" ^ 2),
-       y = "Corn Yields",
-       title = "Winneshiek County Corn Yield") +
-  geom_smooth(
-    method = "lm",
-    formula = y ~ poly(x, 2),
-    se = FALSE,
-    size = 0.5
-    ,
-    color = "black"
-  )
+winne_yields$fitted_q <- quad_timeLM$fitted.values
 
-#Plot yield(y) by year^2 (x), use fitted values from the model for quadratic line 
-
-winne_yields$fitted <- quad_timeLM$fitted.values
+#Plot yield(y) by year (x) 
+#Add line for quadratic time trend
 
 ggplot(winne_yields) +
-  geom_point(mapping = aes(x = yearsq, y = yield), shape = 1) +
-  geom_line(mapping = aes(x = yearsq, y = fitted)) +
+  geom_point(mapping = aes(x = year, y = yield), shape = 1) +
+  geom_line(mapping = aes(x = year, y = fitted_q)) +
   theme_few() +
-  labs(x = expression("Year" ^ 2), y = "Corn Yields",title = "Winneshiek County Corn Yield")
+  labs(x = expression("Year"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield (Quadratic Time Trend)")
 
 ```
 
 
+```{r}
+
+#Plot time trend lines combined 
+
+ggplot(winne_yields) +
+  geom_point(mapping = aes(x = year, y = yield), shape = 1) +
+  geom_line(mapping = aes(x = year, y = fitted_l, col="Linear Time Trend")) +
+  geom_line(mapping = aes(x = year, y = fitted_q, col="Quadratic Time Trend")) +
+  theme_few() +
+  labs(colour = NULL) +
+  labs(x = expression("Year"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield Over Time")
+
+```
+
+
+```{r include=FALSE}
+
+#Plot yield(y) by year^2 (x), use geom_smooth for quadratic line 
+# 
+# ggplot(aes(x = yearsq, y = yield), data = winne_yields) +
+#   geom_point(shape = 1) +
+#   theme_few() +
+#   labs(x = expression("Year" ^ 2),
+#        y = "Corn Yields",
+#        title = "Winneshiek County Corn Yield") +
+#   geom_smooth(
+#     method = "lm",
+#     formula = y ~ poly(x, 2),
+#     se = FALSE,
+#     size = 0.5
+#     ,
+#     color = "black"
+#   )
+```
+
+
 ### Question 2 -- Time Series: Let's analyze the relationship between temperature and yields for the Winneshiek County time series. Use data on yield and summer avg Tmax. Is adding year or Tmax^2 to your model helpful? Make a plot and interpret the results.
+
+#### **Time series analysis within Winneshiek County, Iowa**
+
+#### *SLR - Yield by Covariate: Average Summer Maximum Temperature*
 
 ```{r}
 
@@ -222,56 +262,152 @@ ggplot(winne_yields) +
 winne_summer_yield <- left_join(winne_yields,winnesummer, by = "year")%>% 
   filter(!is.na(meantmax))
 
+#Fit a model for yield(y) and average summer maximum temperature(x) alone 
+
+winne_tempLM <- lm(yield~meantmax, data=winne_summer_yield)
+tidy(summary(winne_tempLM))
+
+#Add fitted values to data frame 
+
+winne_summer_yield$fitted_2 <- winne_tempLM$fitted.values
+
+```
+
+
+#### *MLR - Yield by Covariates: Average Summer Maximum Temperature, Year* 
+
+```{r}
 #Add summer Tmax^2 to winne_summer_yield 
 
 winne_summer_yield$meantmaxsq <- winne_summer_yield$meantmax^2
 
-#Fit a model for yield and average summer maximum temperature alone 
-
-winne_tempLM <- lm(yield~meantmax, data=winne_summer_yield)
-summary(winne_tempLM)
-
-#Plot corn yield (y) and average summer Tmax (x)
-
-ggplot(aes(x = meantmax, y = yield), data = winne_summer_yield) +
-  geom_point(shape = 1) +
-  theme_few() +
-  labs(x = "Summer Maximum Temperature", y = "Corn Yields", title = "Winneshiek County Corn Yield in Summer") +
-  geom_smooth(method = lm, se=FALSE, size = 0.5, color = "black")
-
-#Fit a model for yield with covariates: average summer max temp and year \
+#Fit a model for yield(y) with covariates(x): average summer max temp and year 
 
 temp_yearLM <- lm(yield~meantmax + year, data=winne_summer_yield)
-summary(temp_yearLM)
+tidy(summary(temp_yearLM))
+
+#Add fitted values from model to data frame 
 
 winne_summer_yield$fitted_2a <- temp_yearLM$fitted.values
 
-#Plot 
+```
 
-# Fit a model for yield with covariates: average summer max temp and max temp^2 
+
+#### *MLR - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
+
+```{r}
+
+#Fit a model for yield with covariates: average summer max temp and max temp^2 
 
 quad_tempLM <- lm(yield~meantmax + meantmaxsq, data=winne_summer_yield)
 summary(quad_tempLM)
+
+#Add fitted values from model to data frame 
 
 winne_summer_yield$fitted_2b <- quad_tempLM$fitted.values
 
 ```
 
 
+```{r}
+
+#Plot corn yield (y) by Average Summer Maximum Tempearture(x) with fitted values from regressions 
+
+ggplot(winne_summer_yield) +
+  geom_point(mapping = aes(x = meantmax, y = yield), shape = 1) +
+  geom_line(mapping = aes(x = meantmax, y = fitted_2, col="SLR")) +
+  geom_line(mapping = aes(x = meantmax, y = fitted_2a, col="MLR with year")) +
+  geom_line(mapping = aes(x = meantmax, y = fitted_2b, col="MLR with temp^2")) +
+  labs(colour = NULL) +
+  theme_few() +
+  labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield")
+```
+
+
 ### Question 3 -- Cross-Section: Analyze the relationship between temperature and yield across all counties in 2018. Is there a relationship? Interpret the results.
+
+#### **Cross-section analysis across all Iowa Counties in 2018**
+
+#### *SLR - Yield by Covariate: Average Summer Max Temperature*
 
 ```{r}
 
+#Rename county_ansi to countyfp 
+
+corn_yields <- cornyields %>% 
+  rename('countyfp'= county_ansi)
+
+#Save countyfp as factor 
+
+corn_yields$countyfp <- as.factor(corn_yields$countyfp)
+
+#Filter for 2018 yields only 
+
+county2018_yields <- corn_yields %>% 
+  filter(year==2018)
+
+#Add average summer maximum temp for 2018 
+
+tmax2018 <- tmaxdf %>% 
+  filter(year==2018)%>% 
+  group_by(countyfp) %>% 
+  filter(doy >= 152 & doy <= 243) %>%
+  summarize(meantmax = mean(tmax))
+
+#Combine average summer max temperature with county yield data for 2018 
+
+countytmax2018 <- inner_join(county2018_yields, tmax2018, by='countyfp')
+
+#Fit a model with yield (y) and average summer Tmax (x) 
+
+yield_2018LM <- lm(yield~meantmax, data=countytmax2018)
+tidy(summary(yield_2018LM))
+
+#Add fitted values from model to data frame 
+
+countytmax2018$fitted <-yield_2018LM$fitted.values
+
+#Plot yield(y) by average summer maximum temperature (x)
+
+ggplot(aes(x = meantmax, y = yield), data = countytmax2018) +
+  geom_point(shape = 1) +
+  geom_line(mapping = aes(x=meantmax, y=fitted))+
+  theme_few() +
+  labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Corn Yields across Iowa Counties")
 ```
 
 
 ### Question 4 -- Panel: One way to leverage multiple time series is to group all data into what is called a "panel" regression. Convert the county ID code ("countyfp" or "county_ansi") into factor using as.factor, then include this variable in a regression using all counties' yield and summer temperature data. How does the significance of your temperature coefficients (Tmax, Tmax^2) change? Make a plot comparing actual and fitted yields and interpret the results of your model.
 
 ```{r}
-#Convert county ID code into factor 
-countyID <- as.factor() 
 
-panelLM <- (~ Tmax,Tmax^2,countyID)
+#Combine county and temperature data 
+
+yearly_co_temp <- tmaxdf %>% 
+  group_by(countyfp,year)%>% 
+  filter(doy >= 152 & doy <= 243) %>%
+  summarize(meantmax = mean(tmax))
+
+  
+co_yearly_join <- left_join(yearly_co_temp, corn_yields,by= c('countyfp','year'))
+
+#Add Tmax^2 to data frame 
+
+co_yearly_join$meantmaxsq <- co_yearly_join$meantmax^2
+
+#Fit a panel regression
+
+panelLM <- lm(yield~ meantmax+ meantmaxsq+countyfp, data = co_yearly_join)
+tidy(summary(panelLM))
+
+co_yearly_join$fit_panel <- panelLM$fitted.values
+
+# Plot actual versus fitted yields 
+
+ggplot(co_yearly_join) +
+  geom_point(mapping = aes(x = meantmax, y = yield), shape = 1) +
+  theme_few() +
+  labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Corn Yield")
 
 
 ```
@@ -282,6 +418,19 @@ panelLM <- (~ Tmax,Tmax^2,countyID)
 ```{r}
 #Download NASS data on soybean yields 
 
+#Parameters for soybean data
+params <- list(commodity_desc = "SOYBEAN", util_practice_desc = "GRAIN", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, state_alpha = "IA")
+
+# download
+cornyieldsall <- nassqs_yields(params)
+
+cornyieldsall$county_ansi <- as.numeric(cornyieldsall$county_ansi)
+cornyieldsall$yield <- as.numeric(cornyieldsall$Value)
+
+# clean and filter this dataset
+cornyields <- select(cornyieldsall, county_ansi, county_name, yield, year) %>%
+  filter(!is.na(county_ansi) & !is.na(yield))
+cornyields <- tibble(cornyields)
 
 ```
 
