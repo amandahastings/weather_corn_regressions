@@ -117,7 +117,7 @@ ggplot(winnewinter) +
 
 ### Download NASS corn yield data
 
-```{r yield download}
+```{r yield download, echo=TRUE, include=FALSE}
 
 # set our API key with NASS
 nassqs_auth(key = "AA4F0FBD-6240-3D5A-902F-54E62A4E05F0")
@@ -150,6 +150,8 @@ cornyields <- tibble(cornyields)
 
 library(ggthemes)
 library(broom)
+library(viridis)
+library(viridisLite)
 
 
 #Extract Winneshiek County corn yields 
@@ -177,7 +179,7 @@ ggplot(aes(x = year, y = yield), data = winne_yields) +
 
 ```
 
-With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0 = \beta_1$. We have enough evidence to suggest there is a significant time trend. There estimated 2.457 bu/acre increase in corn yield with each increasing year. 
+With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0 = \beta_1$. We have enough evidence to suggest there is a significant time trend. There is an estimated 2.457 bu/acre increase in corn yield with each increasing year. 
 
 
 ### Question 1b: Fit a quadratic time trend (i.e., year + year^2) and make a plot. Is there evidence for slowing yield growth? 
@@ -223,6 +225,7 @@ ggplot(winne_yields) +
   geom_line(mapping = aes(x = year, y = fitted_q, col="Quadratic Time Trend")) +
   theme_few() +
   labs(colour = NULL) +
+  scale_color_viridis(discrete=TRUE)+
   labs(x = expression("Year"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield Over Time")
 
 ```
@@ -321,6 +324,7 @@ ggplot(winne_summer_yield) +
   geom_line(mapping = aes(x = meantmax, y = fitted_2b, col="QR")) +
   labs(colour = NULL) +
   theme_few() +
+  scale_color_viridis(discrete=TRUE)+
   labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Winneshiek County, IA - Corn Yield")
 ```
 
@@ -402,11 +406,67 @@ co_yearly_join$meantmaxsq <- co_yearly_join$meantmax^2
 
 #### *SLR - Yield by Covariate: Year*
 
+```{r}
+
+SLR_LM <- lm(yield~ year, data = co_yearly_join)
+summary(SLR_LM)
+
+co_yearly_join$fit_SLR <- SLR_LM$fitted.values
+
+# Plot actual versus fitted yields 
+
+ggplot(co_yearly_join) +
+  geom_point(mapping = aes(x = yield, y = fit_SLR), shape = 1) +
+  geom_abline(color="#B3B61A", size=0.75)+
+  theme_few() +
+  labs(x = "Actual Yield", y = "Fitted Values", title="Simple Linear Regression: Yield by Year")
+```
+
+
 #### *Quadratic Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2*
+
+```{r}
+
+QR_LM <- lm(yield~ meantmax+ meantmaxsq, data = co_yearly_join)
+summary(QR_LM)
+
+co_yearly_join$fit_QR <- QR_LM$fitted.values
+
+# Plot actual versus fitted yields 
+
+ggplot(co_yearly_join) +
+  geom_point(mapping = aes(x = yield, y = fit_QR), shape = 1) +
+   geom_abline(color="#B3B61A", size=0.75)+
+  theme_few() +
+  labs(x = "Actual Yield", y = "Fitted Values", title="Quadratic Regression: Yield by Average Summer Maximum Temperature")
+```
+
 
 #### *Multiple Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2, Year* 
 
 ```{r}
+
+# Fit multiple regression yield by Average Summer Maximum Temperature, Max Temperature^2, Year
+
+MR_LM <- lm(yield~ meantmax+ meantmaxsq+ year, data = co_yearly_join)
+summary(MR_LM)
+
+co_yearly_join$fit_MR <- MR_LM$fitted.values
+
+# Plot actual versus fitted yields 
+
+ggplot(co_yearly_join) +
+  geom_point(mapping = aes(x = yield, y = fit_MR), shape = 1) +
+  geom_abline(color="#B3B61A", size=0.75)+
+  theme_few() +
+  labs(x = "Actual Yield", y = "Fitted Values", title="Multiple Regression: Yield by Year and Quadratic Temperature")
+```
+
+
+#### *Panel Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2, Year, County code* 
+
+```{r}
+
 #Fit a panel regression
 
 panelLM <- lm(yield~ meantmax+ meantmaxsq+ year+countyfp, data = co_yearly_join)
@@ -417,9 +477,10 @@ co_yearly_join$fit_panel <- panelLM$fitted.values
 # Plot actual versus fitted yields 
 
 ggplot(co_yearly_join) +
-  geom_point(mapping = aes(x = fit_panel, y = yield), shape = 1) +
-  theme_few() +
-  labs(x = "Fitted Values", y = "Actual Yield")
+  geom_point(mapping = aes(x = yield, y = fit_panel), shape = 1) +
+  geom_abline(color="#B3B61A", size=0.75)+
+  theme_few()+
+  labs(x = "Actual Yield", y = "Fitted Values", title="Panel Regression")
 
 
 ```
@@ -427,7 +488,7 @@ ggplot(co_yearly_join) +
 
 ### Question 5 -- Soybeans: Download NASS data on soybean yields and explore either a time series relationship for a given county, the cross-sectional relationship for a given year, or a panel across all counties and years.
 
-```{r}
+```{r soybean download, echo=TRUE, include=FALSE}
 
 #Download NASS data on soybean yields
 
@@ -455,12 +516,18 @@ soyyields <- tibble(soyyields)
 
 ```{r}
 
+#Load packages to create county map of Iowa 
+
 library(USAboundaries)
 library(USAboundariesData)
 library(mapview)
 
+#Select needed columns 
+
 counties <- us_counties(states = 'iowa') %>%
   dplyr::select(name, geometry)
+
+#Adjust capitalization of county names 
 
 counties$name <- toupper(counties$name)
 
@@ -469,12 +536,17 @@ counties$name <- toupper(counties$name)
 
 ```{r}
 
+#Simplify data by only mapping yield data from one year 
+
 cornyield_2017 <- corn_yields %>%
   filter(year==2017) %>% 
   dplyr::select(county_name, yield, countyfp)
   
+#Combine yield and spatial county data 
 
 co_yields <- merge(counties, cornyield_2017, by.x = "name", by.y = "county_name", all.x=TRUE)
+
+#Map yield by county 
 
 mapview(co_yields, zcol= 'yield')
 ```
