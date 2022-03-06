@@ -626,13 +626,45 @@ mapview(co_yields, zcol= 'yield', layer.name="2017 Corn Yield - Bu per Acre")
 ```
 
 
+Viewing the map of 2017 corn yields across Iowa counties (especially in tandem with the maps below), there appears to be a spatial pattern where corn yields are generally lowest in southern Iowa counties. Furthermore, specifically for the 2017 year, there appears to be higher corn yields in the eastern portion of the state versus the western side. 
+
+
 ### Bonus #2: Challenge question - map trends in corn yields by county across Iowa. Interpret your map.
 
 ```{r}
 
+#Create data frame with corn yield from last 9 years 
+
+cornyield_time <- corn_yields %>% 
+  filter (year %in% c(1985,1990,1995,2000,2005,2010,2015,2020,2021)) %>% 
+   dplyr::select(year, county_name, yield, countyfp)
+
+#Join to counties spatial data 
+
+co_yields_time <- merge(counties, cornyield_time, by.x="name", by.y="county_name", all.x=TRUE)
+
+
+#Use facet wrap by year to show corn yield over the last 9 years
+
+ggplot(na.omit(co_yields_time), aes(fill = yield)) + geom_sf() +
+  scale_fill_viridis() + theme_few() +
+  facet_wrap( ~ year, nrow = 3) +
+  theme(axis.text.x = element_text(
+    color = "black",
+    size = 7,
+    angle = 30,
+    vjust = .8,
+    hjust = .8
+  )) +
+  theme(axis.text.y = element_text(size = 8))+ 
+  labs(title="Iowa County Corn Yields Over Time", fill="Yield (Bu/Acre)")+ 
+  theme(legend.position = "right",
+        legend.key.width = unit(5, "mm"), legend.title=element_text(size=10))
+
 ```
 
 
+The map(s) below shows corn yields across Iowa counties in 5 year intervals, in addition to the two most recent years with yield data. Broadly, this map is supportive of earlier findings from our analyses, where corn yields have generally increased with time. Spatially, the map indicates that south-central Iowa counties produce lower corn yields consistently over time, in comparison to other counties.
 
 
 
