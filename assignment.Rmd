@@ -221,7 +221,7 @@ ggplot(winne_yields) +
 ```
 
 
-There is not strong evidence to suggest there is slowing yield growth over time. The R-squared values between the linear model and quadratic model with regressor(s) year and/or year^2 are comparable at 75.51% or 75.59%, respectively. Overall, 74.31% (Adjusted R-squared) of the variation in yield is explained by the quadratic regression on year (and year^2); however, this is slightly less the variation in yield explained by the regression on year alone (75.51%). This suggests the higher order model, with adding in year^2, does not provide greater predictive ability in the model.
+There is not strong evidence to suggest there is slowing yield growth over time. The R-squared values between the linear model and quadratic model with regressor(s) year and/or year^2 are comparable at 75.51% or 75.59%, respectively. However, considering the adjusted R-squared value, 74.31% of the variation in yield is explained by the quadratic regression on year (and year^2); this is slightly less the variation in yield explained by the regression on year alone (75.51%). The above information suggests the higher order model, with adding in year^2, does not provide greater predictive ability.
 
 
 ```{r}
@@ -308,7 +308,7 @@ winne_summer_yield$fitted_2a <- temp_yearLM$fitted.values
 ```
 
 
-With a p-value of 1.01e-11 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0:\beta_1 = \beta_2$ = 0. We have evidence of a positive linear relationship between year and yield, when average summer max temp is held constant. There is an estimated 2.514 bu/acre increase in corn yield with each increasing year, holding all else constant. 73.18% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer maximum temperature and year. Thus, adding year to the original model analyzing yield by average summer maximum temperature is helpful. 
+With a p-value of 1.01e-11 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0:\beta_1 = \beta_2$ = 0. We have evidence of a positive linear relationship between year and yield, when average summer max temp is held constant. There is an estimated 2.514 bu/acre increase in corn yield with each increasing year, holding all else constant. 73.18% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer maximum temperature and year. Thus, adding year to the original model analyzing yield by average summer maximum temperature improves model predictive ability. 
 
 
 #### *Quadratic Regression - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
@@ -402,6 +402,9 @@ countytmax2018$fitted_l <-yield_2018LM$fitted.values
 ```
 
 
+2.7% of the variation in corn yields is explained by a simple linear regression on average summer max temp across all Iowa counties in 2018. With a p-value of 0.0631 and greater than $\alpha$ = 0.05, we fail to reject the null hypothesis $H_0:\beta_1$ = 0. We do not have sufficient evidence to suggest there is a linear relationship between yield and average summer max temp across all Iowa counties in 2018.
+
+
 #### *QR - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
 
 
@@ -429,6 +432,8 @@ countytmax2018$fitted_q <-yield_2018_QR$fitted.values
 #   labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Corn Yields across Iowa Counties in 2018")
 ```
 
+
+While we did not find enough evidence of a linear relationship between average summer max temp and yield across all Iowa counties in 2018 (p-value 0.0631 > $\alpha$), there is evidence of an overall significant quadratic temperature trend (p-value = 0.001736). 11.24% of the variation in corn yield is explained by the quadratic regression on mean max temperature and mean max temperature squared, across all Iowa counties in 2018. 
 
 
 ```{r}
@@ -466,6 +471,7 @@ co_yearly_join <- left_join(yearly_co_temp, corn_yields, by= c('countyfp','year'
 
 co_yearly_join$meantmaxsq <- co_yearly_join$meantmax^2
 ```
+
 
 #### *SLR - Yield by Covariate: Year*
 
@@ -547,6 +553,8 @@ ggplot(co_yearly_join) +
 
 ```
 
+
+In the panel regression model, the p-value corresponding to coefficients for both mean temperature and mean square temperature are signficant (p-value < 2e-16). 
 
 ### Question 5 -- Soybeans: Download NASS data on soybean yields and explore either a time series relationship for a given county, the cross-sectional relationship for a given year, or a panel across all counties and years.
 
