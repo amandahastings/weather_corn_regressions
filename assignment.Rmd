@@ -554,7 +554,8 @@ ggplot(co_yearly_join) +
 ```
 
 
-In the panel regression model, the p-value corresponding to coefficients for both mean temperature and mean square temperature are signficant (p-value < 2e-16). 
+In order to assess the applicability of the panel regression model (later referred to as model D), I ran the following other models for comparison: a) a simple linear regression with yield by year, b) a quadratic regression with yield by average summer max temp and average summer max temp^2, and c) multiple regression with yield by year, average summer max temp, and max temp^2. For model A, 52.41% of the variability in corn yield was explained by the regression on year. For model B, 19.43% (adjusted R^2) of the variation in corn yield was described by the quadratic regression on average summer max temperature. For model C, 65.65% (adjusted R^2) of the variation in yield was explained by the regression on the model covariates. Finally, for model D, 71.29% (adjusted R^2) of the variation in corn yield was explained by all covariates in the model including county code. 
+
 
 ### Question 5 -- Soybeans: Download NASS data on soybean yields and explore either a time series relationship for a given county, the cross-sectional relationship for a given year, or a panel across all counties and years.
 
@@ -580,6 +581,9 @@ soyyields <-
 soyyields <- tibble(soyyields)
 
 ```
+
+
+#### 
 
 
 ### Bonus: Find a package to make a county map of Iowa displaying some sort of information about yields or weather. Interpret your map.
@@ -618,7 +622,7 @@ co_yields <- merge(counties, cornyield_2017, by.x = "name", by.y = "county_name"
 
 #Map yield by county 
 
-mapview(co_yields, zcol= 'yield')
+mapview(co_yields, zcol= 'yield', layer.name="2017 Corn Yield - Bu per Acre")
 ```
 
 
