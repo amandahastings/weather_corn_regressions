@@ -146,7 +146,7 @@ cornyields <- tibble(cornyields)
 
 #### **Linear time trend analysis within Winneshiek County, Iowa**
 
-#### *SLR - Yield by Covariate: Year*
+#### *Simple Linear Regression (SLR) - Yield by Covariate: Year*
 
 ```{r}
 
@@ -188,11 +188,11 @@ ggplot(aes(x = year, y = yield), data = winne_yields) +
 With a p-value of 1.77e-13 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0:\beta_1$ = 0. We have enough evidence to suggest there is a significant time trend and a positive linear relationship between year and yield. There is an estimated 2.457 bu/acre increase in corn yield with each increasing year. 75.51% of the variation in corn yield is explained by the regression on year. 
 
 
-### Question 1b: Fit a quadratic time trend (i.e., year + year^2) and make a plot. Is there evidence for slowing yield growth? 
+### Question 1b: Fit a quadratic time trend (i.e., year + year^2^) and make a plot. Is there evidence for slowing yield growth? 
 
 #### **Quadratic time trend analysis within Winneshiek County, Iowa**
 
-#### *Quadratic Regression - Yield by Covariates: Year,Year^2*
+#### *Quadratic Regression - Yield by Covariates: Year,Year^2^*
 
 ```{r}
 
@@ -221,7 +221,9 @@ ggplot(winne_yields) +
 ```
 
 
-There is not strong evidence to suggest there is slowing yield growth over time. The R-squared values between the linear model and quadratic model with regressor(s) year and/or year^2 are comparable at 75.51% or 75.59%, respectively. However, considering the adjusted R-squared value, 74.31% of the variation in yield is explained by the quadratic regression on year (and year^2); this is slightly less the variation in yield explained by the regression on year alone (75.51%). The above information suggests the higher order model, with adding in year^2, does not provide greater predictive ability.
+There is not strong evidence to suggest there is slowing yield growth over time. The p-value associated with the overall quadratic regression on year and year^2^ is 2.311e-12 and less than $\alpha$ = 0.5, suggesting there is a relationship between yield and one of the covariates in the model. However, the p-value(s) for each variable independently, year (p-value = 0.745) and year^2^ (p-value = 0.723), are greater than $\alpha$ = 0.5. Given the results of the regression on year alone suggest a linear relationship between yield and year, the linear year term is likely contributing to overall model significance. Thus, this implies the quadratic year^2^ term is not applicable. 
+
+Furthermore, the R-squared values between the linear model and quadratic model with regressor(s) year and/or year^2^ are comparable at 75.51% or 75.59%, respectively. However, with reference to the adjusted R-squared value, 74.31% of the variation in yield is explained by the quadratic regression on year (and year^2^); this is slightly less the variation in yield explained by the regression on year alone (75.51%). These pieces of information suggest the higher order model, with adding in year^2^, does not provide greater predictive ability.
 
 
 ```{r}
@@ -261,7 +263,7 @@ ggplot(winne_yields) +
 ```
 
 
-### Question 2 -- Time Series: Let's analyze the relationship between temperature and yields for the Winneshiek County time series. Use data on yield and summer avg Tmax. Is adding year or Tmax^2 to your model helpful? Make a plot and interpret the results.
+### Question 2 -- Time Series: Let's analyze the relationship between temperature and yields for the Winneshiek County time series. Use data on yield and summer avg Tmax. Is adding year or Tmax^2^ to your model helpful? Make a plot and interpret the results.
 
 #### **Time series analysis within Winneshiek County, Iowa**
 
@@ -311,7 +313,7 @@ winne_summer_yield$fitted_2a <- temp_yearLM$fitted.values
 With a p-value of 1.01e-11 and less than $\alpha$ = 0.05, we reject the null hypothesis $H_0:\beta_1 = \beta_2$ = 0. We have evidence of a positive linear relationship between year and yield, when average summer max temp is held constant. There is an estimated 2.514 bu/acre increase in corn yield with each increasing year, holding all else constant. 73.18% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer maximum temperature and year. Thus, adding year to the original model analyzing yield by average summer maximum temperature improves model predictive ability. 
 
 
-#### *Quadratic Regression - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
+#### *Quadratic Regression - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2^*
 
 ```{r}
 
@@ -327,7 +329,7 @@ winne_summer_yield$fitted_2b <- quad_tempLM$fitted.values
 ```
 
 
-In prior analyses, we found there was not sufficient evidence of a linear relationship between yield and average summer max temp (p-value = 0.2902, R^2 = 3.1%). However, in adding the quadratic term to the model (Tmax^2), 19.84% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer max temp and average summer max temp squared. The quadratic model, therefore, describes greater variability in yield above and beyond the regression on average summer max temp alone. Furthermore, the p-value from the quadratic model F-test is 0.007887 and less than $\alpha$ = 0.05, whereas the p-value from the linear model F-test is 0.2902. This suggests the higher order model serves as a better predictive model. 
+In prior analyses, we found there was not sufficient evidence of a linear relationship between yield and average summer max temp (p-value = 0.2902, R^2^ = 3.1%). However, in adding the quadratic term to the model (Tmax^2^), 19.84% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer max temp and average summer max temp squared. The quadratic model, therefore, describes greater variability in yield above and beyond the regression on average summer max temp alone. Furthermore, the p-value from the F-statistic for the quadratic model overall is 0.007887 and less than $\alpha$ = 0.05, whereas the p-value from the linear model F-statistic is 0.2902. This suggests the higher order model serves as a better predictive model. 
 
 
 ```{r}
@@ -405,7 +407,7 @@ countytmax2018$fitted_l <-yield_2018LM$fitted.values
 2.7% of the variation in corn yields is explained by a simple linear regression on average summer max temp across all Iowa counties in 2018. With a p-value of 0.0631 and greater than $\alpha$ = 0.05, we fail to reject the null hypothesis $H_0:\beta_1$ = 0. We do not have sufficient evidence to suggest there is a linear relationship between yield and average summer max temp across all Iowa counties in 2018.
 
 
-#### *QR - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2*
+#### *QR - Yield by Covariates: Average Summer Max Temperature, Max Temperature^2^*
 
 
 ```{r}
@@ -452,7 +454,7 @@ ggplot(aes(x = meantmax, y = yield), data = countytmax2018) +
 
 
 
-### Question 4 -- Panel: One way to leverage multiple time series is to group all data into what is called a "panel" regression. Convert the county ID code ("countyfp" or "county_ansi") into factor using as.factor, then include this variable in a regression using all counties' yield and summer temperature data. How does the significance of your temperature coefficients (Tmax, Tmax^2) change? Make a plot comparing actual and fitted yields and interpret the results of your model.
+### Question 4 -- Panel: One way to leverage multiple time series is to group all data into what is called a "panel" regression. Convert the county ID code ("countyfp" or "county_ansi") into factor using as.factor, then include this variable in a regression using all counties' yield and summer temperature data. How does the significance of your temperature coefficients (Tmax, Tmax^2^) change? Make a plot comparing actual and fitted yields and interpret the results of your model.
 
 
 ```{r}
@@ -492,7 +494,7 @@ ggplot(co_yearly_join) +
 ```
 
 
-#### *Quadratic Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2*
+#### *Quadratic Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2^*
 
 ```{r}
 
@@ -511,7 +513,7 @@ ggplot(co_yearly_join) +
 ```
 
 
-#### *Multiple Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2, Year* 
+#### *Multiple Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2^, Year* 
 
 ```{r}
 
@@ -532,7 +534,7 @@ ggplot(co_yearly_join) +
 ```
 
 
-#### *Panel Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2, Year, County code* 
+#### *Panel Regression - Yield by Covariates: Average Summer Maximum Temperature, Max Temperature^2^, Year, County code* 
 
 ```{r}
 
@@ -554,8 +556,15 @@ ggplot(co_yearly_join) +
 ```
 
 
-In order to assess the applicability of the panel regression model (later referred to as model D), I ran the following other models for comparison: a) a simple linear regression with yield by year, b) a quadratic regression with yield by average summer max temp and average summer max temp^2, and c) multiple regression with yield by year, average summer max temp, and max temp^2. For model A, 52.41% of the variability in corn yield was explained by the regression on year. For model B, 19.43% (adjusted R^2) of the variation in corn yield was described by the quadratic regression on average summer max temperature. For model C, 65.65% (adjusted R^2) of the variation in yield was explained by the regression on the model covariates. Finally, for model D, 71.29% (adjusted R^2) of the variation in corn yield was explained by all covariates in the model including county code. 
+In order to assess the applicability of the panel regression model (later referred to as model D), I ran the following models for comparison: a) a simple linear regression with yield by year, b) a quadratic regression with yield by average summer max temp and average summer max temp^2^, and c) a multiple regression with yield by year, average summer max temp, and max temp^2^. For model A, 52.41% of the variability in corn yield was explained by the regression on year. For model B, 19.43% (adjusted R^2^) of the variation in corn yield was described by the quadratic regression on average summer max temperature. For model C, 65.65% (adjusted R^2^) of the variation in yield was explained by the regression on the model covariates. Finally, for model D, 71.29% (adjusted R^2^) of the variation in corn yield was explained by all covariates in the model including county code.
 
+The following list includes the p-values associated with the coefficients for average summer max temperature and average summer max temp^2^, while holding all else constant in the models: 
+
+Model B: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
+Model C: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
+Model D: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
+
+As evidenced by the information above, the significance of the temperature coefficients remained consistent across models. In the case of the panel regression, when incorporating county ID into the model, it could be that the coefficients for temperature remained consistent given counties within Iowa may experience boradly similar weather (and thus temperature regimes). 
 
 ### Question 5 -- Soybeans: Download NASS data on soybean yields and explore either a time series relationship for a given county, the cross-sectional relationship for a given year, or a panel across all counties and years.
 
