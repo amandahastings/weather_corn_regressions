@@ -125,7 +125,7 @@ ggplot(winnewinter) +
 nassqs_auth(key = "AA4F0FBD-6240-3D5A-902F-54E62A4E05F0")
 
 # parameters to query on 
-params <- list(commodity_desc = "CORN", util_practice_desc = "GRAIN", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, state_alpha = "IA")
+params <- list(commodity_desc = "CORN", util_practice_desc = "GRAIN", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, agg_level_desc="COUNTY", state_alpha = "IA")
 
 # download
 cornyieldsall <- nassqs_yields(params)
@@ -134,7 +134,7 @@ cornyieldsall$county_ansi <- as.numeric(cornyieldsall$county_ansi)
 cornyieldsall$yield <- as.numeric(cornyieldsall$Value)
 
 # clean and filter this dataset
-cornyields <- select(cornyieldsall, county_ansi, county_name, yield, year) %>%
+cornyields <- dplyr::select(cornyieldsall, county_ansi, county_name, yield, year) %>%
   filter(!is.na(county_ansi) & !is.na(yield))
 cornyields <- tibble(cornyields)
 
@@ -329,7 +329,9 @@ winne_summer_yield$fitted_2b <- quad_tempLM$fitted.values
 ```
 
 
-In prior analyses, we found there was not sufficient evidence of a linear relationship between yield and average summer max temp (p-value = 0.2902, R^2^ = 3.1%). However, in adding the quadratic term to the model (Tmax^2^), 19.84% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer max temp and average summer max temp squared. The quadratic model, therefore, describes greater variability in yield above and beyond the regression on average summer max temp alone. Furthermore, the p-value from the F-statistic for the quadratic model overall is 0.007887 and less than $\alpha$ = 0.05, whereas the p-value from the linear model F-statistic is 0.2902. This suggests the higher order model serves as a better predictive model. 
+In prior analyses, we found there was not sufficient evidence of a linear relationship between yield and average summer max temp (p-value = 0.2902, R^2^ = 3.1%). However, in adding the quadratic term to the model (Tmax^2^), 19.84% (Adjusted R-squared) of the variation in corn yield is explained by the regression on average summer max temp and average summer max temp squared. The quadratic model, therefore, describes greater variability in yield above and beyond the regression on average summer max temp alone. Furthermore, the p-value from the F-statistic for the quadratic model overall is 0.007887 and less than $\alpha$ = 0.05, whereas the p-value from the linear model F-statistic is 0.2902. This suggests the higher order model serves as a better predictive model.
+
+When looking at the plot of yield by average summer maximum temperature, we can see there is high variability. However, the curvature of the line for the fitted quadratic model suggests corn yield increases with temperature until reaching an optimal temperature for plant growth, then declines with temperatures exceeding the optimal temperature. 
 
 
 ```{r}
@@ -444,8 +446,8 @@ While we did not find enough evidence of a linear relationship between average s
 
 ggplot(aes(x = meantmax, y = yield), data = countytmax2018) +
   geom_point(shape = 1) +
-  geom_line(mapping = aes(x=meantmax, y=fitted_l, col="Linear Temperature Trend"))+
-  geom_line(mapping = aes(x=meantmax, y=fitted_q, col="Quadratic Temperature Trend"))+
+  geom_line(mapping = aes(x=meantmax, y=fitted_l, col="Linear Temperature Trend"), size=1)+
+  geom_line(mapping = aes(x=meantmax, y=fitted_q, col="Quadratic Temperature Trend"), size=1)+
   labs(colour = NULL) +
   theme_few() +
   scale_color_viridis(discrete=TRUE)+
@@ -556,27 +558,34 @@ ggplot(co_yearly_join) +
 ```
 
 
-In order to assess the applicability of the panel regression model (later referred to as model D), I ran the following models for comparison: a) a simple linear regression with yield by year, b) a quadratic regression with yield by average summer max temp and average summer max temp^2^, and c) a multiple regression with yield by year, average summer max temp, and max temp^2^. For model A, 52.41% of the variability in corn yield was explained by the regression on year. For model B, 19.43% (adjusted R^2^) of the variation in corn yield was described by the quadratic regression on average summer max temperature. For model C, 65.65% (adjusted R^2^) of the variation in yield was explained by the regression on the model covariates. Finally, for model D, 71.29% (adjusted R^2^) of the variation in corn yield was explained by all covariates in the model including county code.
+In order to assess the applicability of the panel regression model (later referred to as model D), I ran the following models for comparison: a) a simple linear regression with yield by year, b) a quadratic regression with yield by average summer max temp and average summer max temp^2^, and c) a multiple regression with yield by year, average summer max temp, and max temp^2^. For model A, 52.41% of the variability in corn yield is explained by the regression on year. For model B, 19.43% (adjusted R^2^) of the variation in corn yield is explained by the quadratic regression on average summer max temperature. For model C, 65.65% (adjusted R^2^) of the variation in yield is explained by the regression on the model covariates. Finally, for model D, 71.29% (adjusted R^2^) of the variation in corn yield is explained by all covariates in the model including county code.
 
-The following list includes the p-values associated with the coefficients for average summer max temperature and average summer max temp^2^, while holding all else constant in the models: 
+The following list includes the p-values associated with the coefficients for average summer max temperature and average summer max temp^2^, while holding all else constant, in the models: 
 
 Model B: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
 Model C: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
 Model D: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
 
-As evidenced by the information above, the significance of the temperature coefficients remained consistent across models. In the case of the panel regression, when incorporating county ID into the model, it could be that the coefficients for temperature remained consistent given counties within Iowa may experience boradly similar weather (and thus temperature regimes). 
+As evidenced by the information above, the significance of the temperature coefficients remained consistent across models. In the case of the panel regression, when incorporating county ID into the model, it could be that the coefficients for temperature remained consistent given counties within Iowa may experience broadly similar weather (and thus temperature regimes). 
+
 
 ### Question 5 -- Soybeans: Download NASS data on soybean yields and explore either a time series relationship for a given county, the cross-sectional relationship for a given year, or a panel across all counties and years.
 
 ```{r soybean download, echo=TRUE, include=FALSE}
-
 #Download NASS data on soybean yields
 
 #Parameters for soybean data
 
-params2 <- list(commodity_desc = "SOYBEANS",prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, agg_level_desc = "STATE", state_alpha = "IA")
+params2 <- list(commodity_desc = "SOYBEANS", prodn_practice_desc = "ALL PRODUCTION PRACTICES", year__GE = 1981, agg_level_desc="COUNTY", state_alpha = "IA")
+
 
 soyyieldall <- nassqs_yields(params2)
+```
+
+
+```{r echo=TRUE, include=FALSE}
+
+#Set variables as numeric 
 
 soyyieldall$county_ansi <- as.numeric(soyyieldall$county_ansi)
 soyyieldall$yield <- as.numeric(soyyieldall$Value)
@@ -584,7 +593,7 @@ soyyieldall$yield <- as.numeric(soyyieldall$Value)
 #Tidy dataset
 
 soyyields <-
-  select(soyyieldall, county_ansi, county_name, yield, year) %>%
+  select(soyyieldall, county_ansi, county_name, yield, year)%>% 
   filter(!is.na(county_ansi) & !is.na(yield))
 
 soyyields <- tibble(soyyields)
@@ -592,7 +601,86 @@ soyyields <- tibble(soyyields)
 ```
 
 
-#### 
+#### **Cross-section analysis of soy yields across all Iowa Counties in 2018**
+
+```{r}
+#Rename county_ansi to countyfp 
+
+soy_yields <- soyyields %>% 
+  rename('countyfp'= county_ansi)
+
+#Save countyfp as factor 
+
+soy_yields$countyfp <- as.factor(soy_yields$countyfp)
+
+#Filter for 2018 yields only 
+
+county2018_soy <- soy_yields %>% 
+  filter(year==2018)
+
+#Combine average summer max temperature with county yield data for 2018 
+
+soytmax2018 <- inner_join(county2018_soy, tmax2018, by='countyfp')
+```
+
+
+#### *SLR - Soy Yield by Covariate: Average Summer Max Temperature*
+
+```{r}
+
+#Fit a linear model with soy yield (y) and average summer Tmax (x) 
+
+soy_2018LM <- lm(yield~meantmax, data=soytmax2018)
+summary(soy_2018LM)
+
+#Add fitted values from model to data frame 
+
+soytmax2018$fitted_l <-soy_2018LM$fitted.values
+
+```
+
+
+With a p-value of 0.189 and greater than $\alpha$ = 0.05, we fail to reject the null hypothesis $H_0:\beta_1$ = 0. We do not have sufficient evidence to suggest there is a linear relationship between soy yield and average summer max temp across all Iowa counties in 2018. 0.78% of the variation in soy yields is explained by a simple linear regression on average summer max temp across all Iowa counties in 2018.
+
+
+#### *QR - Soy Yield by Covariates: Average Summer Max Temperature, Max Temperature^2^*
+
+
+```{r}
+
+#Add Tmax^2 to data frame 
+
+soytmax2018$meantmaxsq <- soytmax2018$meantmax^2
+
+#Fit a quadratic model with soy yield (y) and average summer Tmax and Tmax^2
+
+soy_2018_QR<- lm(yield~meantmax + meantmaxsq, data=soytmax2018)
+summary(soy_2018_QR)
+
+#Add fitted values from model to data frame 
+
+soytmax2018$fitted_q <-soy_2018_QR$fitted.values
+
+```
+
+
+Similar to as observed with corn yields, soy yields in response to average summer max temp are better predicted by a quadratic regression. The p-value from the F-statistic for the linear model is 0.1893 and greater than $\alpha$ = 0.5, while the p-value for the overall quadratic model F-statistic is 0.00274 < $\alpha$. 10.02% (Adjusted R^2^) of the variation in soy yield is explained by the quadratic regression on mean max temperature and mean max temperature^2^, across all Iowa counties in 2018. By adding the quadratic term to the model, the R^2^ value increased from 0.78% in the linear model to 10.02% with the quadratic regression. A similar temperature trend is present in soy yields as to corn yields. There is high variability in the data and the curvature of the fitted line for the quadratic model suggests increasing yield with increasing temperatures, until reaching a peak temperature for plant growth, then declining at temperatures exceeding optimal temperatures. One final note: overall, in bushels/acre units, corn yield was higher that soy yield in 2018. 
+
+
+```{r}
+
+#Combined plot of linear and quadratic temperature models
+
+ggplot(aes(x = meantmax, y = yield), data = soytmax2018) +
+  geom_point(shape = 1) +
+  geom_line(mapping = aes(x=meantmax, y=fitted_l, col="Linear Temperature Trend"), size=1)+
+  geom_line(mapping = aes(x=meantmax, y=fitted_q, col="Quadratic Temperature Trend"),size=1)+
+  labs(colour = NULL) +
+  theme_few() +
+  scale_color_manual(values=c("#581845","#CBA823"))+
+  labs(x = expression("Average Summer Maximum Temperature ("*degree*C*")"), y = "Yield (Bu/Acre)", title = "Soy Yields across Iowa Counties in 2018")
+```
+
 
 
 ### Bonus: Find a package to make a county map of Iowa displaying some sort of information about yields or weather. Interpret your map.
@@ -673,7 +761,7 @@ ggplot(na.omit(co_yields_time), aes(fill = yield)) + geom_sf() +
 ```
 
 
-The map(s) below shows corn yields across Iowa counties in 5 year intervals, in addition to the two most recent years with yield data. Broadly, this map is supportive of earlier findings from our analyses, where corn yields have generally increased with time. Spatially, the map indicates that south-central Iowa counties produce lower corn yields consistently over time, in comparison to other counties.
+The map(s) above shows corn yields across Iowa counties in 5 year intervals, in addition to the two most recent years with yield data. Broadly, this map is supportive of earlier findings from our analyses, where corn yields have generally increased with time. Spatially, the map indicates that south-central Iowa counties produce lower corn yields consistently over time, in comparison to other counties.
 
 
 
