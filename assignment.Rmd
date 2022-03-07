@@ -563,7 +563,9 @@ In order to assess the applicability of the panel regression model (later referr
 The following list includes the p-values associated with the coefficients for average summer max temperature and average summer max temp^2^, while holding all else constant, in the models: 
 
 Model B: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
+
 Model C: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
+
 Model D: Average Max Temp (p-value = <2e-16), Max Temp^2^ (p-value = <2e-16)
 
 As evidenced by the information above, the significance of the temperature coefficients remained consistent across models. In the case of the panel regression, when incorporating county ID into the model, it could be that the coefficients for temperature remained consistent given counties within Iowa may experience broadly similar weather (and thus temperature regimes). 
